@@ -1,0 +1,195 @@
+[gd_scene format=3 uid="uid://dm2lfii4ja50u"]
+
+[ext_resource type="Texture2D" uid="uid://cwl878bitjvdp" path="res://Assets/ghostface_scary_movie_sprite_sheet_by_spider_monkie_digldy8-pre.png" id="1_3mxmt"]
+[ext_resource type="AudioStream" uid="uid://bkqfkf4yqo5yf" path="res://Assets/Punch Sound effect (mp3cut.net).mp3" id="3_108wt"]
+[ext_resource type="PackedScene" uid="uid://b0qbpbddrw501" path="res://Scripts/ghealth_bar.tscn" id="4_3btnm"]
+
+[sub_resource type="GDScript" id="GDScript_108wt"]
+script/source = "extends Node2D
+
+@onready var b=$CharacterBody2D/Ghostanimation
+@onready var s=$AudioStreamPlayer
+@onready var health =$Ghealth_bar
+@onready var hitbox: Area2D =$CharacterBody2D/Hitbox
+@onready var hit_shape:CollisionShape2D = $CharacterBody2D/Hitbox/CollisionShape2D
+var speed:=200
+var dir:=1
+var already_hit:=false
+
+func _ready() -> void:
+	health._init_health(6)
+	hit_shape.disabled = true
+	$CharacterBody2D/Hurtbox.add_to_group(\"hurtbox\")
+	hitbox.area_entered.connect(_on_hitbox_area_entered)
+func _process(del):
+	if Input.is_action_pressed(\"Botleft\"):
+		position.x-=speed*dir*del
+		b.play(\"walk\")
+		b.flip_h = true
+		
+	elif Input.is_action_pressed(\"botright\"):
+		position.x+=speed*dir*del
+		b.play(\"walk\")
+		b.flip_h = false
+	elif Input.is_action_pressed(\"Pucnhplayer2\"):
+		already_hit=false
+		hit_shape.disabled=false
+		b.play(\"Punch\")
+		s.play()
+		await get_tree().create_timer(0.15).timeout
+	else:
+		b.play(\"Idle\")
+		
+func take_damage(amount:int)-> void:
+	health.health -=amount
+	if health.health<=0:
+		queue_free()
+	
+func _on_hitbox_area_entered(area:Area2D) -> void:
+	if already_hit:
+		return
+		
+	if not area.is_in_group(\"hurtbox\"):
+		return
+		
+	var opponent : Node=area
+	
+	while opponent !=null and not opponent.has_method(\"take_damage\"):
+		opponent = opponent.get_parent()
+		
+	if opponent !=null:
+		opponent.take_damage(1)
+		already_hit = true
+		print(\"hit\")	
+"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uta0k"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(0, 296, 92, 148)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_st3at"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(92, 296, 92, 148)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e3r4w"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(0, 576, 109, 144)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_108wt"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(109, 576, 109, 144)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3btnm"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(218, 576, 109, 144)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_taxxh"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(327, 576, 109, 144)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_thbej"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(436, 576, 109, 144)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7hbae"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(184, 296, 92, 148)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xoekh"]
+atlas = ExtResource("1_3mxmt")
+region = Rect2(276, 296, 92, 148)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_vdkt2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uta0k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_st3at")
+}],
+"loop": true,
+"name": &"Idle",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e3r4w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_108wt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3btnm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_taxxh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_thbej")
+}],
+"loop": true,
+"name": &"Punch",
+"speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uta0k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_st3at")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7hbae")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xoekh")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 12.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_108wt"]
+radius = 17.0
+height = 92.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3btnm"]
+radius = 1.4345498
+height = 56.55605
+
+[node name="Ghost" type="Node2D" unique_id=1337933002]
+script = SubResource("GDScript_108wt")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="." unique_id=1229720012]
+position = Vector2(1, 1)
+
+[node name="Ghostanimation" type="AnimatedSprite2D" parent="CharacterBody2D" unique_id=654909267]
+scale = Vector2(0.9924277, 1)
+sprite_frames = SubResource("SpriteFrames_vdkt2")
+animation = &"Punch"
+frame = 1
+frame_progress = 0.98336303
+
+[node name="Hurtbox" type="Area2D" parent="CharacterBody2D" unique_id=90107118]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/Hurtbox" unique_id=1396233064]
+position = Vector2(8, 0)
+shape = SubResource("CapsuleShape2D_108wt")
+
+[node name="Hitbox" type="Area2D" parent="CharacterBody2D" unique_id=1071123519]
+position = Vector2(48, 0)
+scale = Vector2(11.850409, -1.6620679)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D/Hitbox" unique_id=1171654492]
+position = Vector2(-0.3375411, 0.60166013)
+shape = SubResource("CapsuleShape2D_3btnm")
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=2080231868]
+stream = ExtResource("3_108wt")
+
+[node name="Ghealth_bar" parent="." unique_id=1883857865 instance=ExtResource("4_3btnm")]
+offset_left = -25.0
+offset_top = -79.0
+offset_right = 53.0
+offset_bottom = -63.0
